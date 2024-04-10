@@ -2,8 +2,17 @@ import numpy as np
 
 
 class Queue:
-    def __init__(self, service_interval_range, servers, capacity, id, next_queue=None):
+    def __init__(
+        self,
+        service_interval_range,
+        servers,
+        capacity,
+        id,
+        arrival_interval_range=(1, 4),
+        next_queue=None,
+    ):
         self.service_interval_range = service_interval_range
+        self.arrival_interval_range = arrival_interval_range
         self.servers = servers
         self.capacity = capacity
         self.id = id
@@ -83,7 +92,7 @@ class QueueNetwork:
         for _ in range(num_events - 1):
             time += np.random.exponential(
                 1
-            )  # Simplified arrival process for demonstration
+            )
             self.queues[0].process_arrival(time)
             for queue in self.queues:
                 queue.start_service(time)
@@ -127,11 +136,21 @@ def configure_queue(id):
 
     servers = int(input("Informe o número de servidores: "))
     capacity = int(input("Informe a capacidade da fila: "))
+    arrival_input = input(
+        "Informe o intervalo de tempo de chegada entre dois valores (ex: 1 4) ou 0 para usar o padrão (1 4): "
+    ).strip()
+    if arrival_input == "0":
+        arrival_interval_range = (1, 4)  # Valores padrão
+    else:
+        arrival_start, arrival_end = map(float, arrival_input.split())
+        arrival_interval_range = (arrival_start, arrival_end)
+
     return Queue(
         service_interval_range=(service_start, service_end),
         servers=servers,
         capacity=capacity,
         id=id,
+        arrival_interval_range=arrival_interval_range,
     )
 
 
@@ -147,7 +166,10 @@ def main():
     num_events = int(input("\nInforme o número de eventos: "))
     start_time = float(input("Informe o tempo de início da simulação: "))
 
-    network.simulate(num_events, start_time)
+    network.simulate(
+        num_events,
+        start_time,
+    )
 
     events_file_path = "simulation_events.txt"
     network.save_events_to_file(events_file_path)
